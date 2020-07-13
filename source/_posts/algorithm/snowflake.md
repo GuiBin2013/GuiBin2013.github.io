@@ -16,7 +16,7 @@ categories:
 # 算法原理
 
 雪花算法由一个64位整数组成。
-![雪花算法](images/snowflake.png)
+![雪花算法](snowflake/snowflake.png)
 
 ## 组成结构
 
