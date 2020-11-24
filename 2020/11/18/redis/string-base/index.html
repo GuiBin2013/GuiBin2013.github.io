@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.0.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.0" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="简单大于复杂">
+<meta property="og:type" content="website">
+<meta property="og:title" content="categories">
+<meta property="og:url" content="http://yoursite.com/categories/index.html">
+<meta property="og:site_name" content="vip">
+<meta property="og:description" content="简单大于复杂">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-07-11T00:55:42.207Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="categories">
+<meta name="twitter:description" content="简单大于复杂">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/categories/">
+
+
+
+
+
+  <title>redis-基础数据结构：string | vip</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">vip</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/18/redis/string-base/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="打杂的咸鱼">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/myimage.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="vip">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis-基础数据结构：string</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-18T13:22:30+08:00">2020-11-18</time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="基础命令"><a href="#基础命令" class="headerlink" title="基础命令"></a>基础命令</h2><p>返回值如果是0或1的情况下，1表示成功，0表示失败</p>
+<table>
+<thead>
+<tr>
+<th>命名</th>
+<th>作用</th>
+<th>返回值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SETNX key val</td>
+<td>设置k-v</td>
+<td>0/1</td>
+<td></td>
+</tr>
+<tr>
+<td>SETEX key time val</td>
+<td>设置一个有期限的k-v</td>
+<td>OK;timeErr时返回error</td>
+<td></td>
+</tr>
+<tr>
+<td>SETRANGE key offset val</td>
+<td>修改某个位置的值</td>
+<td>字符串长度</td>
+<td>不存在时，前面用\x00填充, 长度较小O(1), 大为O(n)</td>
+</tr>
+<tr>
+<td>MSET(NX) key1 val1 key2 val2 …</td>
+<td>设置多个值</td>
+<td>OK (-NX: 返回1/0)</td>
+<td>MSETNX有原子性)</td>
+</tr>
+<tr>
+<td>MGET key1 key2 …</td>
+<td>获取多个值</td>
+<td>总是返回多个value</td>
+<td></td>
+</tr>
+<tr>
+<td>GETRANGE key start end</td>
+<td>获取某个字符串的切片</td>
+<td>返回val[start:end+1]</td>
+<td></td>
+</tr>
+<tr>
+<td>GETSET key val</td>
+<td>获取旧值并设置新值</td>
+<td>nil/oldValue</td>
+<td></td>
+</tr>
+<tr>
+<td>STRLEN key</td>
+<td>获取长度</td>
+<td>返回长度</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>APPEND key value</td>
+<td>追加字符穿</td>
+<td>返回新字符串长度</td>
+<td>不存在会set一个</td>
+</tr>
+<tr>
+<td>INCR(BY)/DECR(BY)</td>
+<td>整数自增(1或n)</td>
+<td>new_value/error</td>
+<td>float不可用,范围在-2^63~2^63-1</td>
+</tr>
+<tr>
+<td>INCRBYFLOAT</td>
+<td>浮点数自增</td>
+<td>返回new_value/error</td>
+<td>整数可用, 最多17位小数</td>
+</tr>
+<tr>
+<td>SETBIT key offset 1/0</td>
+<td>设置比特位</td>
+<td>返回原本的位上的值</td>
+<td>key每一字符是以8位二进制存储,如a: 01100001(97)</td>
+</tr>
+<tr>
+<td>GETBIT key offset</td>
+<td>获取当前位置上的比特值</td>
+<td>返回当前位置上的值</td>
+<td>不存在也返回0</td>
+</tr>
+<tr>
+<td>BITOP (AND/OR/XOR) dkey key1 key2</td>
+<td>将key1与key2进行位操作后赋给dkey</td>
+<td>0/1</td>
+<td></td>
+</tr>
+<tr>
+<td>BITOP NOT dkey key1</td>
+<td>将key1取反位操作后赋给dkey</td>
+<td>0/1</td>
+<td></td>
+</tr>
+<tr>
+<td>BITCOUNT key [start] [end]</td>
+<td>计算bit为1的数量</td>
+<td>返回数量</td>
+<td>O(n)</td>
+</tr>
+</tbody>
+</table>
+<!-- # redis-基础数据结构：string -->
+<h2 id="string的底层数据结构"><a href="#string的底层数据结构" class="headerlink" title="string的底层数据结构"></a>string的底层数据结构</h2><p>redis的字符串底层实现主要有三种编码：</p>
+<pre><code>- int
+- raw
+- embstr
+</code></pre><h3 id="int编码"><a href="#int编码" class="headerlink" title="int编码"></a>int编码</h3><p>redis底层使用8个字节的有符号long类型进行整数储存，即范围在（-2^63，2^63-1）。</p>
+<pre><code>127.0.0.1:6379&gt; SET number 10086
+OK
+127.0.0.1:6379&gt; OBJECT ENCODING number
+&quot;int&quot;
+</code></pre><p><img src="/2020/11/18/redis/string-base/redis-string-int.png" alt="int数据结构"></p>
+<center> int数据结构</center>
+
+<p><strong>当value超出long类型的范围时，redis将改变储存的编码以及数据结构，使用emstr或者raw</strong></p>
+<pre><code>127.0.0.1:6379&gt; SET number 9223372036854775807
+OK
+127.0.0.1:6379&gt; OBJECT ENCODING number
+&quot;int&quot;
+127.0.0.1:6379&gt; SET number 9223372036854775808
+OK
+127.0.0.1:6379&gt; OBJECT ENCODING number
+&quot;embstr&quot;
+127.0.0.1:6379&gt; SET number 9223372036854775808922337203685477580888888888
+OK
+127.0.0.1:6379&gt; OBJECT ENCODING number
+&quot;raw&quot;
+</code></pre><h3 id="embstr编码"><a href="#embstr编码" class="headerlink" title="embstr编码"></a>embstr编码</h3><p>如果字符串对象保存的是一个字符串值或者<strong>浮点型</strong>， 当长度小于<strong>44</strong>(v3.2之前为39)字节， 那么将使用embstr编码的方式来保存，可称为emstr编码的简单动态字符串（SDS)。</p>
+<pre><code>简单动态字符串（SDS）
+struct sdshdr { 
+    int len;     // buf中已使用的长度
+    int free;    // buf中剩余可用的长度
+    char buf[];  // 数据空间,以&apos;\0&apos;结尾
+}
+
+127.0.0.1:6379&gt; SET key hello
+OK
+127.0.0.1:6379&gt; OBJECT ENCODING key
+&quot;embstr&quot;
+127.0.0.1:6379&gt; SET key hellohellohellohellohellohellohellohellohello
+OK
+127.0.0.1:6379&gt; OBJECT ENCODING key
+&quot;raw&quot;
+</code></pre><p><img src="/2020/11/18/redis/string-base/redis-string-emstr.png" alt="emstr数据结构"></p>
+<center> emstr数据结构</center>
+
+<h3 id="raw编码"><a href="#raw编码" class="headerlink" title="raw编码"></a>raw编码</h3><p>当字符串大于44个字节，将使用raw编码的方式来保存，即简单动态字符串（SDS)。</p>
+<pre><code>127.0.0.1:6379&gt; SET key hellohellohellohellohellohellohellohellohello
+OK
+127.0.0.1:6379&gt; OBJECT ENCODING key
+&quot;raw&quot;
+</code></pre><p><img src="/2020/11/18/redis/string-base/redis-string-raw.png" alt="raw数据结构"></p>
+<center> raw数据结构</center>
+
+<h3 id="emstr-amp-amp-raw的区别"><a href="#emstr-amp-amp-raw的区别" class="headerlink" title="emstr&amp;&amp;raw的区别"></a>emstr&amp;&amp;raw的区别</h3><p>两者都采用sds结构来表示字符串对象，embstr编码是通过调用一次内存分配函数来分配一块<strong>连续</strong>的空间，而raw需要调用两次分别创建redisObject结构和sds结构，emstr是一种储存短字符串的优化方案。</p>
+<pre><code>embstr编码优势：
+1. 减少内存分配的次数。
+2. 减少内存释放的次数
+3. embstr编码的所有数据都保存在一块连续的内存里面，能够更好地利用缓存带来的优势。
+</code></pre><h2 id="sds的其它策略"><a href="#sds的其它策略" class="headerlink" title="sds的其它策略"></a>sds的其它策略</h2><ol>
+<li>sds在len属性中记录了长度，获取长度时间复杂度为O(1)。</li>
+<li><p>预空间分配, 分为一下两种情况：</p>
+<p> a. 长度len值小于1MB，将分配和len属性同样大小的未使用空间，即free和len属性值相同。buf的长度为2*len+1(结尾空字符)。</p>
+<p> b. 长度len值大于等于1MB，则分配1MB的free空间。buf的长度为len+1MB+1</p>
+</li>
+<li>惰性释放空间：当执行sdstrim（截取字符串）之后，不会立马释放多出来的空间，若未来进行拼接操作，可以使用这些内存，从而减少不必要的内存重新分配。</li>
+</ol>
+<h2 id="编码转换"><a href="#编码转换" class="headerlink" title="编码转换"></a>编码转换</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>int 编码</th>
+<th>embstr 编码</th>
+<th>raw 编码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET</td>
+<td>使用 int 编码保存值。</td>
+<td>使用 embstr 编码保存值。</td>
+<td>使用 raw 编码保存值。</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>拷贝对象所保存的整数值， 将这个拷贝转换成字符串值， 然后返回这个字符串值。</td>
+<td>直接返回字符串值。</td>
+<td>直接返回字符串值。</td>
+</tr>
+<tr>
+<td>APPEND</td>
+<td>将对象转换成 raw 编码， 然后按 raw 编码的方式执行此操作。</td>
+<td>将对象转换成 raw 编码， 然后按 raw 编码的方式执行此操作。</td>
+<td>调用 sdscatlen 函数， 将给定字符串追加到现有字符串的末尾。</td>
+</tr>
+<tr>
+<td>INCRBYFLOAT</td>
+<td>转换成浮点型类型进行计算， 结果保存为emstr类型。</td>
+<td>转换成浮点型类型进行计算，若无法转换成浮点型，返回error</td>
+<td>同emstr</td>
+</tr>
+<tr>
+<td>INCR(BY）/DECR(BY)</td>
+<td>对整数值进行加法计算， 得出的计算结果会作为整数被保存起来。</td>
+<td>转换成整数进行计算，结果保存为int，若无法转换成整数，返回error</td>
+<td>同emstr</td>
+</tr>
+<tr>
+<td>STRLEN</td>
+<td>拷贝对象所保存的整数值， 将这个拷贝转换成字符串值， 计算并返回这个字符串值的长度。</td>
+<td>调用 sdslen 函数， 返回字符串的长度。</td>
+<td>调用 sdslen 函数， 返回字符串的长度。</td>
+</tr>
+<tr>
+<td>SETRANGE</td>
+<td>将对象转换成 raw 编码， 然后按 raw 编码的方式执行此命令。</td>
+<td>将对象转换成 raw 编码， 然后按 raw 编码的方式执行此命令。</td>
+<td>将字符串特定索引上的值设置为给定的字符。</td>
+</tr>
+<tr>
+<td>GETRANGE</td>
+<td>拷贝对象转换成字符串值， 然后取出并返回字符串指定索引上的字符。</td>
+<td>直接取出并返回字符串指定索引上的字符。</td>
+<td>直接取出并返回字符串指定索引上的字符。</td>
+</tr>
+</tbody>
+</table>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/14/algorithm/snowflake/" rel="next" title="雪花算法">
+                <i class="fa fa-chevron-left"></i> 雪花算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/11/23/redis/list-base/" rel="prev" title="redis-基础数据结构：list">
+                redis-基础数据结构：list <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/myimage.png" alt="打杂的咸鱼">
+            
+              <p class="site-author-name" itemprop="name">打杂的咸鱼</p>
+              <p class="site-description motion-element" itemprop="description">简单大于复杂</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础命令"><span class="nav-number">1.</span> <span class="nav-text">基础命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#string的底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">string的底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#int编码"><span class="nav-number">2.1.</span> <span class="nav-text">int编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#embstr编码"><span class="nav-number">2.2.</span> <span class="nav-text">embstr编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#raw编码"><span class="nav-number">2.3.</span> <span class="nav-text">raw编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#emstr-amp-amp-raw的区别"><span class="nav-number">2.4.</span> <span class="nav-text">emstr&amp;&amp;raw的区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sds的其它策略"><span class="nav-number">3.</span> <span class="nav-text">sds的其它策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编码转换"><span class="nav-number">4.</span> <span class="nav-text">编码转换</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">打杂的咸鱼</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
