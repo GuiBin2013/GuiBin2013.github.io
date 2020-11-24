@@ -77,14 +77,14 @@
 
 <meta name="description" content="简单大于复杂">
 <meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="http://yoursite.com/categories/index.html">
+<meta property="og:title" content="tags">
+<meta property="og:url" content="http://yoursite.com/tags/index.html">
 <meta property="og:site_name" content="vip">
 <meta property="og:description" content="简单大于复杂">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2020-07-11T00:55:42.207Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="categories">
+<meta name="twitter:title" content="tags">
 <meta name="twitter:description" content="简单大于复杂">
 
 
@@ -117,7 +117,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/">
+  <link rel="canonical" href="http://yoursite.com/tags/">
 
 
 
@@ -428,8 +428,13 @@
 &quot;quicklist&quot;
 </code></pre><p>List对象结构体：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">list</span> &#123;</span></span><br><span class="line">    listNode *head;    <span class="comment">// 链表透节点</span></span><br><span class="line">    listNode *tail;    <span class="comment">// 链表尾节点</span></span><br><span class="line">    <span class="keyword">void</span> *(*dup)(<span class="keyword">void</span> *ptr);    <span class="comment">// 节点值复制函数</span></span><br><span class="line">    <span class="keyword">void</span> (*<span class="built_in">free</span>)(<span class="keyword">void</span> *ptr);    <span class="comment">// 节点值释放函数</span></span><br><span class="line">    <span class="keyword">int</span> (*match)(<span class="keyword">void</span> *ptr, <span class="keyword">void</span> *key);  <span class="comment">// 节点值对比函数   </span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> len; <span class="comment">// 链表所包含的节点数量</span></span><br><span class="line"> &#125; <span class="built_in">list</span>;</span><br></pre></td></tr></table></figure></p>
 <p>List每个节点的对象结构体<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> &#123;</span></span><br><span class="line">     <span class="comment">// 前节点指针</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">prev</span>;</span></span><br><span class="line">    <span class="comment">// 后节点指针</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">next</span>;</span></span><br><span class="line">    <span class="comment">// 节点的值</span></span><br><span class="line">    <span class="keyword">void</span> *value;</span><br><span class="line"> &#125; listNode;</span><br></pre></td></tr></table></figure></p>
-<h3 id="双端链表linkedlist"><a href="#双端链表linkedlist" class="headerlink" title="双端链表linkedlist"></a>双端链表linkedlist</h3><p><img src="/2020/11/23/redis/list-base/redis-list-linkedlist.png" alt="双端链表"> </p>
-<center> 双端链表数据结构</center><br>特点：<br><br>    1.节点带有前后节点，获取前后置节点时间复杂度为O(1)<br>    2.带有链表头尾指针，len属性的存在使得获取链表长度为O(1)<br><br>### 压缩列表ziplist<br>ziplist是为了节省内存而出现的，一系列特殊编码的连续内存块，组成的顺序型数据结构。与双端链表相比，ziplist具有节省内存空间，但增加了删除和更新时的复杂度，在节点数量较小时才比较合适。<br><br>### 快速列表quicklist<br>由于双向链表每个节点需要额外的的pre和tail的空间(16个字节)，并且每个节点的内存独立分配，不利于管理。quicklist采用按段划分，每段之间采用linkedlist关联，而段内采用ziplist进行管理。<br><img src="/2020/11/23/redis/list-base/redis-list-quicklist.png" alt="双端链表"><br><center> 快速列表数据结构</center>
+<h3 id="int编码"><a href="#int编码" class="headerlink" title="int编码"></a>int编码</h3><h3 id="双端链表linkedlist"><a href="#双端链表linkedlist" class="headerlink" title="双端链表linkedlist"></a>双端链表linkedlist</h3><p><img src="/2020/11/23/redis/list-base/redis-list-linkedlist.png" alt="双端链表"> </p>
+<p>特点：</p>
+<pre><code>1.节点带有前后节点，获取前后置节点时间复杂度为O(1)
+2.带有链表头尾指针，len属性的存在使得获取链表长度为O(1)
+</code></pre><h3 id="压缩列表ziplist"><a href="#压缩列表ziplist" class="headerlink" title="压缩列表ziplist"></a>压缩列表ziplist</h3><p>ziplist是为了节省内存而出现的，一系列特殊编码的连续内存块，组成的顺序型数据结构。与双端链表相比，ziplist具有节省内存空间，但增加了删除和更新时的复杂度，在节点数量较小时才比较合适。</p>
+<h3 id="快速列表quicklist"><a href="#快速列表quicklist" class="headerlink" title="快速列表quicklist"></a>快速列表quicklist</h3><p>由于双向链表每个节点需要额外的的pre和tail的空间(16个字节)，并且每个节点的内存独立分配，不利于管理。quicklist采用按段划分，每段之间采用linkedlist关联，而段内采用ziplist进行管理。<br><img src="/2020/11/23/redis/list-base/redis-list-quicklist.png" alt="双端链表"> </p>
+<center> 快速列表数据结构</center>
 
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
 <li>双端： 链表节点带有 prev 和 next 指针， 获取某个节点的前置节点和后置节点的复杂度都是 O(1) 。</li>
@@ -610,7 +615,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础命令"><span class="nav-number">1.</span> <span class="nav-text">基础命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#双端链表linkedlist"><span class="nav-number">2.1.</span> <span class="nav-text">双端链表linkedlist</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础命令"><span class="nav-number">1.</span> <span class="nav-text">基础命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#int编码"><span class="nav-number">2.1.</span> <span class="nav-text">int编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双端链表linkedlist"><span class="nav-number">2.2.</span> <span class="nav-text">双端链表linkedlist</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#压缩列表ziplist"><span class="nav-number">2.3.</span> <span class="nav-text">压缩列表ziplist</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#快速列表quicklist"><span class="nav-number">2.4.</span> <span class="nav-text">快速列表quicklist</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
             
 
           </div>
