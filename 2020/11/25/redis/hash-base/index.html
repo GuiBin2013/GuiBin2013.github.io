@@ -123,7 +123,7 @@
 
 
 
-  <title> | vip</title>
+  <title>redis-基础数据结构：字典(hash) | vip</title>
   
 
 
@@ -267,7 +267,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">redis-基础数据结构：字典(hash)</h1>
         
 
         <div class="post-meta">
@@ -287,6 +287,28 @@
             
           </span>
 
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -315,7 +337,87 @@
       
 
       
-        
+        <h2 id="基础命令"><a href="#基础命令" class="headerlink" title="基础命令"></a>基础命令</h2><table>
+<thead>
+<tr>
+<th>命名</th>
+<th>作用</th>
+<th>返回值</th>
+<th>复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H(M)SET key f1 v1 f2 v2 …</td>
+<td>给key的字段赋值</td>
+<td>新增加的字段数量</td>
+<td>O(1) / O(n)</td>
+</tr>
+<tr>
+<td>HGET key field</td>
+<td>获取key的字段的值</td>
+<td>该字段的值</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>HEL key f1 f2 …</td>
+<td>删除1个或多个字段</td>
+<td>成功删除多数量</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>HEXISTS key field</td>
+<td>是否存在该字段</td>
+<td>1/0</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>HINCRBY/HINCRBYFLOAT key field increment</td>
+<td>某个字段自增</td>
+<td>该字段自增后的值</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>HLEN key</td>
+<td>这个key字段的数量</td>
+<td>返回数量</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>HMGET key field</td>
+<td>获取key的多个字段的值</td>
+<td>多个字段的值</td>
+<td>O(n)</td>
+</tr>
+</tbody>
+</table>
+<p> HGETALL key| 获取key所有字段名和字段值| 字段名+字段值| O(n)|<br> HKEYS key| 获取key所有字段名| 字段名| O(n)|<br> HKEYS key| 获取key所有字段值| 字段值| O(n)|</p>
+<h2 id="底层数据结构"><a href="#底层数据结构" class="headerlink" title="底层数据结构"></a>底层数据结构</h2><p>字典底层基于哈希表或者压缩列表实现。</p>
+<pre><code>127.0.0.1:6379&gt; HSET person1 name vip
+(integer) 1
+127.0.0.1:6379&gt; OBJECT ENCODING person1
+&quot;ziplist&quot;
+127.0.0.1:6379&gt; HSET person2 name vipppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+(integer) 1
+127.0.0.1:6379&gt; OBJECT ENCODING person2
+&quot;hashtable&quot;
+</code></pre><h3 id="编码的转换"><a href="#编码的转换" class="headerlink" title="编码的转换"></a>编码的转换</h3><pre><code>满足任一条件，压缩列表会转换成哈希表：
+1.字典中某个key或某个value的长度大于64(默认)
+2.压缩列表中的节点大于512(默认)
+</code></pre><h3 id="压缩列表ziplist"><a href="#压缩列表ziplist" class="headerlink" title="压缩列表ziplist"></a>压缩列表ziplist</h3><p>当使用压缩列表时，编码为REDIS_ENCODING_ZIPLIST, 键值对会被一起压入压缩列表中连续存储，<br><img src="/2020/11/25/redis/hash-base/redis-hash-ziplist.png" alt="压缩列表"><br>压缩列表头部还包括：</p>
+<pre><code>zlbytes: 压缩列表占的内存。
+zltail: 与压缩列表尾部的距离。
+zllen: 压缩列表的大小。
+</code></pre><p>新添加的键值对会从尾部加入压缩列表当中。</p>
+<h3 id="哈希表hashtable"><a href="#哈希表hashtable" class="headerlink" title="哈希表hashtable"></a>哈希表hashtable</h3><p>当使用哈希表时， 编码为REDIS_ENCODING_HT，一个哈希表中存在多个哈希节点，每个哈希节点保存着一对键值对。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 字典</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dict</span> &#123;</span></span><br><span class="line">    dictType *type; <span class="comment">// 类型特定函数</span></span><br><span class="line">    <span class="keyword">void</span> *privdata; <span class="comment">// 私有数据，在某些特定函数中使用</span></span><br><span class="line">    dictht ht[<span class="number">2</span>]; <span class="comment">// 哈希表,大小为2</span></span><br><span class="line">    <span class="keyword">int</span> rehashidx; <span class="comment">// rehash索引，当rehash不在进行时，值为 -1</span></span><br><span class="line">    <span class="keyword">int</span> iterators; <span class="comment">// 正在使用的迭代器数量?</span></span><br><span class="line"> &#125; dict; </span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 哈希表</span></span><br><span class="line"> <span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictht</span> &#123;</span></span><br><span class="line">    dictEntry **table;  <span class="comment">// 哈希节点数组</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> size;    <span class="comment">// 哈希表大小</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> sizemask; <span class="comment">// 哈希表掩码，用于计算索引值，值为size - 1</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> used; <span class="comment">// 已存在的哈希节点数量</span></span><br><span class="line">&#125; dictht;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 哈希节点</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> &#123;</span></span><br><span class="line">    <span class="keyword">void</span> *key;    <span class="comment">// key</span></span><br><span class="line">    <span class="keyword">union</span> &#123;<span class="keyword">void</span> *val;<span class="keyword">uint64_t</span> u64;<span class="keyword">int64_t</span> s64;&#125; v;    <span class="comment">//  val</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> *<span class="title">next</span>;</span> <span class="comment">//指向下个哈希表节点，形成链表</span></span><br><span class="line"> &#125; dictEntry;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/2020/11/25/redis/hash-base/redis-hash-table.png" alt="哈希表"></p>
+<h4 id="哈希碰撞"><a href="#哈希碰撞" class="headerlink" title="哈希碰撞"></a>哈希碰撞</h4><p>哈希表可以实现O(1)读写操作，效率很高。当当有两个或以上的键被分配到哈希数组的同一个索引上时，会产生哈希冲突。redis采用链地址法来解决键冲突。即每个哈希表节点都有一个next指针，多个哈希表节点用next指针构成一个单项链表。</p>
+<pre><code>负载因子=哈希表已使用节点数/哈希表大小
+1.当哈希表负载因子比例为1:1，性能最佳，
+2.当哈希表负载因子较大时，会形成多个链表，性能就会受到较大影响。
+</code></pre><h4 id="rehash"><a href="#rehash" class="headerlink" title="rehash"></a>rehash</h4><p>为了保持字典的优秀性能，redis在不改变任何键值对的情况下，会进行rehash(重新散列)，尽可能使负载因子维持在1。</p>
+<p>每个字典有两个哈希表，一个为正常使用，另一个仅在rehash时使用。在键值队数量的增多或减少情况下，通过rehash，使得哈希表的负载因子维持在一个合理范围内。</p>
+
       
     </div>
     
@@ -329,6 +431,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+        </div>
       
 
       
@@ -403,8 +511,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -466,6 +583,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础命令"><span class="nav-number">1.</span> <span class="nav-text">基础命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编码的转换"><span class="nav-number">2.1.</span> <span class="nav-text">编码的转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#压缩列表ziplist"><span class="nav-number">2.2.</span> <span class="nav-text">压缩列表ziplist</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#哈希表hashtable"><span class="nav-number">2.3.</span> <span class="nav-text">哈希表hashtable</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#哈希碰撞"><span class="nav-number">2.3.1.</span> <span class="nav-text">哈希碰撞</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rehash"><span class="nav-number">2.3.2.</span> <span class="nav-text">rehash</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
