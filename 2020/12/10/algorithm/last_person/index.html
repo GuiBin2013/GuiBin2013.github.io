@@ -77,14 +77,14 @@
 
 <meta name="description" content="简单大于复杂">
 <meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="http://yoursite.com/categories/index.html">
+<meta property="og:title" content="tags">
+<meta property="og:url" content="http://yoursite.com/tags/index.html">
 <meta property="og:site_name" content="vip">
 <meta property="og:description" content="简单大于复杂">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2020-07-11T00:55:42.207Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="categories">
+<meta name="twitter:title" content="tags">
 <meta name="twitter:description" content="简单大于复杂">
 
 
@@ -117,7 +117,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/">
+  <link rel="canonical" href="http://yoursite.com/tags/">
 
 
 
@@ -315,7 +315,10 @@
       
 
       
-        
+        <p>算法题目：有n个人按照1-n排列序号，围成一个圆圈，重复数1-3，每次数到3的人退出，直到只剩下一个人，求这个人的序号</p>
+<h2 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h2><p>将1-n放在一个数组中，每次从1数到3后，将第1和第2个数插入队尾，第三个数抛弃，第4-n的数往前移动，同时数组的长度-1，直到数组的长度为2，输出第2个数  </p>
+<h2 id="解题"><a href="#解题" class="headerlink" title="解题"></a>解题</h2><h3 id="python"><a href="#python" class="headerlink" title="python"></a>python</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">circle_count</span><span class="params">(arr: list, n: int)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    :param arr: 原始数组 </span></span><br><span class="line"><span class="string">    :param n: 表示当前长度</span></span><br><span class="line"><span class="string">    :return: </span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    a0 = arr[<span class="number">0</span>]</span><br><span class="line">    a1 = arr[<span class="number">1</span>]</span><br><span class="line">    <span class="comment"># 将数组往前推3位</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, n - <span class="number">3</span>):</span><br><span class="line">        arr[i] = arr[i + <span class="number">3</span>]</span><br><span class="line">    arr[n - <span class="number">3</span>] = a0  <span class="comment"># 放在倒数第三位</span></span><br><span class="line">    arr[n - <span class="number">2</span>] = a1  <span class="comment"># 放在倒数第二位</span></span><br><span class="line">    <span class="comment"># 倒数第一位不操作</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">last_person</span><span class="params">(n)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> n &lt;= <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    arr = [i <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, n + <span class="number">1</span>)]</span><br><span class="line">    <span class="keyword">while</span> n &gt; <span class="number">2</span>:</span><br><span class="line">        circle_count(arr, n)</span><br><span class="line">        <span class="comment"># n-1表示数组的长度-1</span></span><br><span class="line">        n -= <span class="number">1</span></span><br><span class="line">    <span class="comment"># 当 n=1时，返回1，当n=2时，返回2, 当n&gt;2时，返回arr[1]</span></span><br><span class="line">    <span class="keyword">return</span> arr[n - <span class="number">1</span>]</span><br></pre></td></tr></table></figure>
+<h3 id="go"><a href="#go" class="headerlink" title="go"></a>go</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LastPerson</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> n &lt;= <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">	&#125;</span><br><span class="line">	arr := <span class="built_in">make</span>([]<span class="keyword">int</span>, n)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">		arr[i] = i + <span class="number">1</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> n &gt; <span class="number">2</span> &#123;</span><br><span class="line">		CircleCount(arr, n)</span><br><span class="line">		n --</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> arr[n<span class="number">-1</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CircleCount</span><span class="params">(arr []<span class="keyword">int</span>, n <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	a0 := arr[<span class="number">0</span>]</span><br><span class="line">	a1 := arr[<span class="number">1</span>]</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n<span class="number">-3</span>; i++ &#123;</span><br><span class="line">		arr[i] = arr[i+<span class="number">3</span>]</span><br><span class="line">	&#125;</span><br><span class="line">	arr[n<span class="number">-3</span>] = a0</span><br><span class="line">	arr[n<span class="number">-2</span>] = a1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
     
@@ -348,6 +351,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/03/03/redis/base-sds/" rel="prev" title="redis5-基础数据结构：SDS">
+                redis5-基础数据结构：SDS <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -399,8 +406,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -417,7 +433,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-count">29</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -428,7 +444,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -439,7 +455,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -463,6 +479,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#解题思路"><span class="nav-number">1.</span> <span class="nav-text">解题思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解题"><span class="nav-number">2.</span> <span class="nav-text">解题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#python"><span class="nav-number">2.1.</span> <span class="nav-text">python</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#go"><span class="nav-number">2.2.</span> <span class="nav-text">go</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -476,7 +508,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2019 &mdash; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; 2019 &mdash; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

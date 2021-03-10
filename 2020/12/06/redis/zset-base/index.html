@@ -77,14 +77,14 @@
 
 <meta name="description" content="简单大于复杂">
 <meta property="og:type" content="website">
-<meta property="og:title" content="categories">
-<meta property="og:url" content="http://yoursite.com/categories/index.html">
+<meta property="og:title" content="tags">
+<meta property="og:url" content="http://yoursite.com/tags/index.html">
 <meta property="og:site_name" content="vip">
 <meta property="og:description" content="简单大于复杂">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2020-07-11T00:55:42.207Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="categories">
+<meta name="twitter:title" content="tags">
 <meta name="twitter:description" content="简单大于复杂">
 
 
@@ -117,7 +117,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/">
+  <link rel="canonical" href="http://yoursite.com/tags/">
 
 
 
@@ -429,19 +429,28 @@
 <p><img src="/2020/12/06/redis/zset-base/redis-zset-ziplist.png" alt="压缩列表"></p>
 <p>压缩表的具体信息查看列表结构</p>
 <h3 id="REDIS-ENCODING-SKIPLIST"><a href="#REDIS-ENCODING-SKIPLIST" class="headerlink" title="REDIS_ENCODING_SKIPLIST"></a>REDIS_ENCODING_SKIPLIST</h3><p>跳跃表是有序的数据结构，通过每个节点维持多个指向其他节点的指针，从而达到快速访问元素的目的。</p>
-<pre><code>127.0.0.1:6379&gt; ZADD news 100 ttttttttaaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffggggggggghh
+<h4 id="原生跳跃表"><a href="#原生跳跃表" class="headerlink" title="原生跳跃表"></a>原生跳跃表</h4><pre><code>a.跳跃表由很多层(level)组合，每层是一个有序链表，数据递增。
+b.包含一个64层的头节点结构，每层的结构包含指向本层的下个节点的指针以及与下个节点的跨度(距离span)
+c.每层最后一个节点指向NULL，表示本层的结束。
+d.第一层包含所有节点，节点数量为跳跃表长度(length)，不包含头节点。
+e.除了头节点，拥有最多层的节点的层高称为跳跃表的高度(level)。
+f.每个节点包含一个后退指针，指向前一个节点，头节点和第一个节点指向NULL。
+</code></pre><p><strong>跳跃表通过牺牲空间复杂度来达到减少查找的时间复杂度，查询、插入、删除的平均复杂度都为O(logN)</strong></p>
+<h4 id="redis跳跃表实现"><a href="#redis跳跃表实现" class="headerlink" title="redis跳跃表实现"></a>redis跳跃表实现</h4><pre><code>127.0.0.1:6379&gt; ZADD news 100 ttttttttaaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffggggggggghh
 (integer) 1
 127.0.0.1:6379&gt; OBJECT ENCODING news
 &quot;skiplist&quot;
 </code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 跳跃表定义</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplist</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">head</span>, *<span class="title">tail</span>;</span> <span class="comment">//指向表头、表尾节点</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> length; 	<span class="comment">//跳跃表包含的节点数量</span></span><br><span class="line">    <span class="keyword">int</span> level; 	<span class="comment">//跳跃表层数</span></span><br><span class="line">&#125; zskiplist;</span><br></pre></td></tr></table></figure>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 跳跃表节点定义</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">backward</span>;</span>	<span class="comment">//后退指针</span></span><br><span class="line">	<span class="keyword">double</span> score;	<span class="comment">//分值</span></span><br><span class="line">	robj *obj;		<span class="comment">//成员对象</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">zskiplistLevel</span> &#123;</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">forward</span>;</span>	<span class="comment">//前进指针</span></span><br><span class="line">		<span class="keyword">unsigned</span> <span class="keyword">int</span> span;	<span class="comment">//跨度</span></span><br><span class="line">	&#125; level[];</span><br><span class="line">&#125; zskiplistNode;</span><br></pre></td></tr></table></figure>
-<p>level表示层，每个层都具有两个属性：前进指针和跨度，前进指针用于访问后面的节点，跨度则记录了当前节点和前进指针指向的节点的距离。<br>后退指针指向了当前的节点的前一个结点，一般用于从表尾遍历到表头。<br><img src="/2020/12/06/redis/zset-base/redis-zset-skiplist.png" alt="跳跃表"></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 有序集合</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zset</span> &#123;</span></span><br><span class="line">	zskiplist *zsl;</span><br><span class="line">	dict *dict;</span><br><span class="line">&#125; zset;</span><br></pre></td></tr></table></figure>
+<p><img src="/2020/12/06/redis/zset-base/redis-zset-skiplist.png" alt="跳跃表"></p>
+<pre><code>跳跃表生成层高是通过随机的方式产生的，并且值越大出现的概率就越低。节点层高确定之后就不回再修改。
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 有序集合</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zset</span> &#123;</span></span><br><span class="line">	zskiplist *zsl;</span><br><span class="line">	dict *dict;</span><br><span class="line">&#125; zset;</span><br></pre></td></tr></table></figure>
 <p>zset中的dict字典用于创建了一个成员到分值的映射表，其中，key保存内容，value保存了分值。通过这个字典可以实现以O(1)的时间复杂度查找分值。这两种数据结构(dict和skiplist)通过指针来共享数据，从而节省空间占用。<br><img src="/2020/12/06/redis/zset-base/redis-zset.png" alt="有序集合"></p>
 <h3 id="编码切换"><a href="#编码切换" class="headerlink" title="编码切换"></a>编码切换</h3><p>如果集合初始编码为 REDIS_ENCODING_ZIPLIST，当满足其中一个条件时，会切换成 REDIS_ENCODING_SKIPLIST 编码。</p>
-<pre><code>1、元素个数大于 zset-max-ziplist-entries（默认512）
+<pre><code>1、元素个数大于 zset-max-ziplist-entries（默认128）
 2、有一个元素的值大于 zset-max-ziplist-value（默认64字节）
-</code></pre>
+</code></pre><p>一旦zset转变为跳跃表之后，就不回重新转为压缩列表。</p>
+
       
     </div>
     
@@ -562,7 +571,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-count">29</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -573,7 +582,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -584,7 +593,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -617,7 +626,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础命令"><span class="nav-number">1.</span> <span class="nav-text">基础命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编码类型"><span class="nav-number">2.1.</span> <span class="nav-text">编码类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REDIS-ENCODING-ZIPLIST"><span class="nav-number">2.2.</span> <span class="nav-text">REDIS_ENCODING_ZIPLIST</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REDIS-ENCODING-SKIPLIST"><span class="nav-number">2.3.</span> <span class="nav-text">REDIS_ENCODING_SKIPLIST</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编码切换"><span class="nav-number">2.4.</span> <span class="nav-text">编码切换</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础命令"><span class="nav-number">1.</span> <span class="nav-text">基础命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编码类型"><span class="nav-number">2.1.</span> <span class="nav-text">编码类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REDIS-ENCODING-ZIPLIST"><span class="nav-number">2.2.</span> <span class="nav-text">REDIS_ENCODING_ZIPLIST</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REDIS-ENCODING-SKIPLIST"><span class="nav-number">2.3.</span> <span class="nav-text">REDIS_ENCODING_SKIPLIST</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#原生跳跃表"><span class="nav-number">2.3.1.</span> <span class="nav-text">原生跳跃表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis跳跃表实现"><span class="nav-number">2.3.2.</span> <span class="nav-text">redis跳跃表实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编码切换"><span class="nav-number">2.4.</span> <span class="nav-text">编码切换</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -637,7 +646,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2019 &mdash; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; 2019 &mdash; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
